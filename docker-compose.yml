@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  mario:
+    build: .
+    container_name: juego_mario
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    devices:
+      - /dev/snd:/dev/snd
+    working_dir: /app
+    command: python3 JuegoMarioBross.py
+    environment:
+      - DISPLAY=${DISPLAY} 
+    #perimitir que el contendor se ejecute en la pantalla locql
+    network_mode: host
+
