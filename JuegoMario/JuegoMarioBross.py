@@ -4,9 +4,7 @@ import time
 import random
 import queue
 
-# -----------------------
 # Inicialización básica
-# -----------------------
 pygame.init()
 
 # Pantalla
@@ -29,16 +27,14 @@ YELLOW = (255, 204, 0)
 POWER_COLOR = (255, 100, 0)
 BLUE = (50, 120, 255)
 
-# -----------------------
 # Mundo / Cámara
-# -----------------------
 camera_x = 0
 CAMERA_SPEED = 4
-WORLD_WIDTH = 3000  # ancho del mundo (puedes aumentarlo)
+WORLD_WIDTH = 8000  # ancho del mundo 
 
-# -----------------------
-# Hilos y sincronización
-# -----------------------
+
+#HILOS Y SINCRONIZACION
+
 player_mutex = threading.Lock()
 enemy_mutex = threading.Lock()
 coin_mutex = threading.Lock()
@@ -48,10 +44,8 @@ powerup_mutex = threading.Lock()
 enemy_semaphore = threading.Semaphore(3)
 event_queue = queue.Queue()
 
-# -----------------------
-# Variables compartidas
-# Usamos coordenadas del mundo (no de pantalla)
-# -----------------------
+#Variables compartidas
+#Usamos coordenadas del mundo
 shared_player_position = [50, 500]  # [x_world, y_world]
 shared_player_velocity = [0, 0]
 shared_player_score = 0
@@ -66,9 +60,7 @@ shared_powerups = []
 game_running = True
 sentiment_analysis_active = True
 
-# -----------------------
 # CLASES DEL JUEGO
-# -----------------------
 class Platform:
     def __init__(self, x, y, width):
         self.x = x
@@ -232,7 +224,7 @@ class Player:
             # Rectángulo del jugador (coordenadas del mundo)
             player_rect = pygame.Rect(shared_player_position[0], shared_player_position[1], self.width, self.height)
 
-            # Colisión con plataformas (usar coordenadas del mundo)
+            # Colisión con plataformas
             self.on_ground = False
             for platform in shared_platforms:
                 platform_rect = pygame.Rect(platform.x, platform.y, platform.width, platform.height)
@@ -243,13 +235,13 @@ class Player:
                         self.velocity_y = 0
                         self.on_ground = True
                         player_rect = pygame.Rect(shared_player_position[0], shared_player_position[1], self.width, self.height)
-                    # Si choca por abajo (golpe a bloque desde abajo posible)
+                    # Si choca por abajo (golpe a bloque desde abajo)
                     elif self.velocity_y < 0 and player_rect.top <= platform_rect.bottom:
                         shared_player_position[1] = platform.y + platform.height
                         self.velocity_y = 0
                         player_rect = pygame.Rect(shared_player_position[0], shared_player_position[1], self.width, self.height)
 
-            # Colisión con bloques (golpe por abajo)
+            # Colisión (golpe por abajo)
             for block in shared_blocks:
                 block_rect = pygame.Rect(block.x, block.y, block.size, block.size)
                 if player_rect.colliderect(block_rect):
@@ -268,13 +260,13 @@ class Player:
                 self.velocity_y = 0
                 self.on_ground = True
 
-            # Limites horizontales en world coords
+            # Limites horizontales 
             if shared_player_position[0] < 0:
                 shared_player_position[0] = 0
             if shared_player_position[0] > WORLD_WIDTH - self.width:
                 shared_player_position[0] = WORLD_WIDTH - self.width
 
-            # Scroll lateral: ajustar camera_x basado en posición del jugador en pantalla
+            # Scroll lateral, ajustar camera_x basado en posición del jugador en pantalla
             screen_player_x = shared_player_position[0] - camera_x
             left_border = SCREEN_WIDTH * 0.4
             right_border = SCREEN_WIDTH * 0.6
@@ -296,9 +288,8 @@ class Player:
             self.velocity_y = -12
             self.on_ground = False
 
-# -----------------------
+
 # HILOS DEL SISTEMA (mejorados)
-# -----------------------
 def enemy_manager():
     global shared_enemies
     while game_running:
@@ -400,9 +391,7 @@ def event_processor():
         except Exception as e:
             print(f"Error en event_processor: {e}")
 
-# -----------------------
 # Inicializar elementos del mundo
-# -----------------------
 def initialize_game():
     global shared_platforms, shared_blocks, shared_coins, shared_powerups
 
@@ -429,15 +418,14 @@ def initialize_game():
     shared_enemies = []
     shared_powerups = []
 
-    # Hilos (daemon para que terminen al cerrar)
+    # Hilos ( para que terminen al cerrar)
     threading.Thread(target=enemy_manager, daemon=True).start()
     threading.Thread(target=coin_manager, daemon=True).start()
     threading.Thread(target=sentiment_analyzer, daemon=True).start()
     threading.Thread(target=event_processor, daemon=True).start()
 
-# -----------------------
 # BUCLE PRINCIPAL
-# -----------------------
+
 def main():
     global game_running, sentiment_analysis_active, shared_player_lives
 
@@ -446,7 +434,7 @@ def main():
 
     font = pygame.font.SysFont('Arial', 24)
 
-    # Variables para power-up temporal (por ejemplo efecto de tamaño)
+    # Variables para power-up temporal
     powerup_active = False
     powerup_timer = 0
     powerup_duration = 10.0  # segundos
@@ -472,7 +460,7 @@ def main():
                 if shared_player_position[0] > WORLD_WIDTH - player.width:
                     shared_player_position[0] = WORLD_WIDTH - player.width
 
-        # Actualizar jugador (incluye cámara)
+        # Actualizar jugador
         player.update()
 
         # Actualizar bloques
@@ -480,7 +468,7 @@ def main():
             for b in shared_blocks:
                 b.update()
 
-        # Actualizar enemigos y monedas (dibujado y actualizaciones en bucle principal para sincronía visual)
+        # Actualizar enemigos y monedas
         with enemy_mutex:
             for e in shared_enemies:
                 e.update()
@@ -503,7 +491,7 @@ def main():
                     # marcar eliminado visualmente (PowerUp.check_collision lo marca)
                     print("Power-up recogido! Vidas:", shared_player_lives)
 
-        # Manejar expiración del power-up (si aplica)
+        # Manejar expiración del power-up 
         if powerup_active and (time.time() - powerup_timer) > powerup_duration:
             powerup_active = False
             print("Power-up expirado")
@@ -513,7 +501,7 @@ def main():
             if shared_player_lives <= 0:
                 game_running = False
 
-        # ----------------- DIBUJO -----------------
+        # DIBUJO 
         screen.fill(BLACK)
 
         # Dibujar plataformas
@@ -540,7 +528,7 @@ def main():
             for enemy in shared_enemies:
                 enemy.draw()
 
-        # Dibujar jugador (en pantalla; el player.draw usa camera_x internamente)
+        # Dibujar jugador (en pantalla)
         player.draw()
 
         # HUD (puntaje, vidas, hilos activos, cámara)
