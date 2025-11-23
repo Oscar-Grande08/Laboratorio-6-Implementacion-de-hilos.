@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  gestures:
+    build: .
+    container_name: gestos_app
+    devices:
+      - "/dev/video0:/dev/video0" #webcam del pc linux. 
+    volumes:
+      - ./:/app
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+    network_mode: host
