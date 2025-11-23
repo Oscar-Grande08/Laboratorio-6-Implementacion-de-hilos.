@@ -1,10 +1,3 @@
-"""
-streamlit_gestures.py
-Detector de gestos con MediaPipe + Streamlit usando hilos, semáforo y mutex.
-Controles:
- - Abre la app web (streamlit run streamlit_gestures.py)
- - Start/Stop captura desde la UI.
-"""
 import streamlit as st
 import cv2
 import mediapipe as mp
@@ -13,38 +6,33 @@ import time
 import numpy as np
 from collections import deque
 
-# -----------------------------
 # CONFIGURACIÓN UI / GLOBALS
-# -----------------------------
+
 st.set_page_config(page_title="Detector de Gestos (MediaPipe + Hilos)", layout="wide")
+#shared state (seguro por mutex)
+shared_frame = None     # frame BGR (coordenadas del work)
+shared_frame_lock = threading.Lock()   # < MUTEX que protege acceso a shared_frame
 
-# Shared state (seguro por mutex)
-shared_frame = None           # frame BGR (world coordinates)
-shared_frame_lock = threading.Lock()   # <--- MUTEX (Lock) que protege acceso a shared_frame
+#semaphore que indica "hay frame disponible para procesar"
+frame_semaphore = threading.Semaphore(0)   # < SEMAFORO
 
-# Semaphore que indica "hay frame disponible para procesar"
-frame_semaphore = threading.Semaphore(0)   # <--- SEMÁFORO
-
-# Cola simple para últimos resultados (no crítica pero protegida por lock)
+#cola simple para últimos resultados 
 result_lock = threading.Lock()
 latest_result = {"gesture": None, "score": 0.0}
 
-# Flags de control
+#flags de control
 capture_running = False
 capture_thread_obj = None
 process_thread_obj = None
 
-# Buffer para mostrar FPS y estabilidad
+#buffer para mostrar FPS y estabilidad
 frame_times = deque(maxlen=20)
 
-# MediaPipe tools (creadas dentro del hilo de procesado para evitar freeze en import)
+#mediaPipe tools 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 
-# -----------------------------
-# FUNCIÓN: heurísticas simples de gesto
-# Usa landmarks de MediaPipe Hands para determinar gesto.
-# -----------------------------
+#funcion: heurísticas simples de gesto
 def finger_is_up(hand_landmarks, finger_tip, finger_pip):
     """Devuelve True si la punta del dedo (tip) está por encima (en y menor) que el pip (en coordenadas normalizadas)."""
     return hand_landmarks.landmark[finger_tip].y < hand_landmarks.landmark[finger_pip].y
@@ -90,12 +78,11 @@ def classify_basic_gesture(hand_landmarks):
     # fallback
     return ("UNKNOWN", 0.5)
 
-# -----------------------------
-# HILO 1: captura de frames desde la cámara (producer)
-# - Lee cv2.VideoCapture(0)
+# HILO 1: captura de frames desde la cámara
 # - Escribe en shared_frame (sección crítica protegida por shared_frame_lock)
 # - Llama frame_semaphore.release() para avisar al procesador
 # -----------------------------
+
 def camera_capture_thread(device=0, width=640, height=480):
     global capture_running, shared_frame
     cap = cv2.VideoCapture(device)
@@ -113,7 +100,7 @@ def camera_capture_thread(device=0, width=640, height=480):
             continue
 
         # Guardar frame en sección crítica
-        with shared_frame_lock:   # <-- sección crítica protegida por mutex
+        with shared_frame_lock:   # <sección crítica protegida por mutex
             shared_frame = frame.copy()
         # Señalamos que hay frame nuevo
         try:
@@ -125,17 +112,9 @@ def camera_capture_thread(device=0, width=640, height=480):
         # pequeño sleep para limitar FPS de captura
         time.sleep(0.01)
     cap.release()
-
-# -----------------------------
-# HILO 2: procesador (consumer)
-# - Espera frame_semaphore.acquire() → indica que hay frame nuevo
-# - Copia el frame desde shared_frame (sección crítica protegida)
-# - Ejecuta MediaPipe Hands y clasificación heurística
-# - Guarda resultado en latest_result (sección crítica protected por result_lock)
-# -----------------------------
 def processing_thread():
     global capture_running, latest_result, frame_times
-    # Crear el objeto MediaPipe Hands (se ejecuta en este hilo)
+    # Crear el objeto MediaPipe Hands
     hands = mp_hands.Hands(static_image_mode=False,
                            max_num_hands=2,
                            min_detection_confidence=0.5,
@@ -185,9 +164,7 @@ def processing_thread():
     finally:
         hands.close()
 
-# -----------------------------
 # FUNCIONES DE UI
-# -----------------------------
 def start_capture(device=0):
     global capture_running, capture_thread_obj, process_thread_obj
     if capture_running:
@@ -209,9 +186,7 @@ def stop_capture():
     except:
         pass
 
-# -----------------------------
 # STREAMLIT LAYOUT
-# -----------------------------
 st.title("🔮 Detector de Gestos con MediaPipe + Hilos")
 col1, col2 = st.columns([2, 1])
 
@@ -232,7 +207,7 @@ with col2:
     st.write(" - Ajusta parámetros en el código si necesitas.")
     st.write("Semáforo usado para sincronizar frames. Lock protege shared_frame y latest_result.")
 
-# Loop principal de la UI: muestra frame procesado y resultado
+# Loop principal muestra frame procesado y resultado
 while True:
     # Leer resultado de forma segura
     with result_lock:
@@ -253,4 +228,4 @@ while True:
     # Small sleep to avoid locking UI thread too hard
     time.sleep(0.03)
 
-# Nota: La app se cierra con Ctrl+C en terminal o deteniendo Streamlit.
+#La app se cierra con Ctrl+C en terminal o deteniendo Streamlit.
