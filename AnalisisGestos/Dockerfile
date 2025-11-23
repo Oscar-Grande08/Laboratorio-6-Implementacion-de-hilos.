@@ -18,18 +18,13 @@ RUN apt-get update && apt-get install -y \
 
 #directorio de trabajo
 WORKDIR /app
-
 #copiar dependencias
 COPY requerimientos.txt .
-
 #instalar dependencias de Python
 RUN pip install --no-cache-dir -r requerimientos.txt
-
 #copiar aplicacion
 COPY . .
-
 #exponer Streamlit
 EXPOSE 8501
-
 #ejecutar Streamlit
 CMD ["streamlit", "run", "gestos.py", "--server.address=0.0.0.0"]
