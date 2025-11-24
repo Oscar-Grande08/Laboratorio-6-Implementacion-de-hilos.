@@ -1,5 +1,5 @@
 # Laboratorio-6-Implementacion-de-hilos.
-📝 Introducción
+##📝 Introducción
 
 Este proyecto compila el desarrollo de tres ejercicios enfocados en la comprensión, implementación y despliegue de aplicaciones que utilizan concurrencia, procesamiento en tiempo real y contenedorización mediante Docker. A lo largo del trabajo, se integraron principios fundamentales de sistemas operativos, programación concurrente, visión por computadora y orquestación de servicios, con el fin de obtener soluciones robustas, reproducibles y ejecutables en diferentes entornos.
 
