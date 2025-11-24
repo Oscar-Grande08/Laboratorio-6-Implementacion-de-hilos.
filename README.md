@@ -1,9 +1,9 @@
 # Laboratorio-6-Implementacion-de-hilos.
-##📝 Introducción##
+## 📝 Introducción
 
 Este proyecto compila el desarrollo de tres ejercicios enfocados en la comprensión, implementación y despliegue de aplicaciones que utilizan concurrencia, procesamiento en tiempo real y contenedorización mediante Docker. A lo largo del trabajo, se integraron principios fundamentales de sistemas operativos, programación concurrente, visión por computadora y orquestación de servicios, con el fin de obtener soluciones robustas, reproducibles y ejecutables en diferentes entornos.
 
-🎮 1. Videojuego en Python con concurrencia
+### 🎮 1. Videojuego en Python con concurrencia
 
 En el primer ejercicio se desarrolló un videojuego estilo plataforma utilizando Pygame, al cual se le incorporaron:
 
@@ -26,7 +26,7 @@ Manejo de drivers y librerías de entorno de escritorio
 
 Configuración de volúmenes para interacción con el host
 
-🤖 2. Aplicación de reconocimiento de gestos con Streamlit
+### 🤖 2. Aplicación de reconocimiento de gestos con Streamlit
 
 En el segundo ejercicio se implementó una aplicación web interactiva que:
 
@@ -50,7 +50,7 @@ Ejecución del servidor Streamlit mediante docker-compose.
 
 Este ejercicio permitió cubrir temas avanzados relacionados con dispositivos de hardware desde contenedores, manipulación de flujos de video y despliegue de aplicaciones web interactivas.
 
-🐳 3. Construcción y Debugging de Imágenes Docker Complejas
+### 🐳 3. Construcción y Debugging de Imágenes Docker Complejas
 
 A lo largo del proyecto, se resolvieron problemas reales y frecuentes al construir imágenes:
 
@@ -74,11 +74,11 @@ Uso adecuado de volumes, networks y modos de ejecución.
 
 Separación clara entre entorno de desarrollo y entorno de ejecución.
 
-📌 Objetivo General
+## 📌 Objetivo General
 
 El objetivo de este proyecto fue integrar conceptos avanzados de concurrencia, multimedia y despliegue de software en contenedores, logrando aplicaciones funcionales y portables que puedan ejecutarse en diferentes máquinas sin necesidad de instalar entornos complejos.
 
-🧱 ¿Qué aporta este proyecto?
+## 🧱 ¿Qué aporta este proyecto?
 
 Comprensión práctica de la programación concurrente.
 
